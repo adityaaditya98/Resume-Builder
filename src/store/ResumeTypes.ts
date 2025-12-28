@@ -1,5 +1,5 @@
 export type PageSize = 'A4' | 'Letter';
-export type SortVariant = 'compact' | 'expanded' | 'grid' | 'minimal' | 'classic' | 'tags' | 'list';
+export type SortVariant = 'compact' | 'expanded' | 'grid' | 'minimal' | 'classic' | 'tags' | 'list' | 'sidebar';
 
 export interface ResumeSettings {
     pageSize: PageSize;

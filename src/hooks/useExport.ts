@@ -42,24 +42,17 @@ export const useExport = () => {
     }, [clearSelection]);
 
     const exportToPDF = useCallback(async (fileName: string = 'design') => {
-        const element = document.getElementById('canvas-content');
-        if (!element) return;
+        // Find all pages
+        const pages = Array.from(document.querySelectorAll('[data-page]')) as HTMLElement[];
+        if (pages.length === 0) {
+            console.error('No pages found to export');
+            return;
+        }
 
         setIsExporting(true);
         await _prepareCanvas();
 
         try {
-            const canvas = await html2canvas(element, {
-                scale: 3, // Higher resolution for print
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-
-            // A4 dimensions in mm: 210 x 297
-            // We want to fit the image exactly to these dimensions
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -69,7 +62,25 @@ export const useExport = () => {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
 
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            for (let i = 0; i < pages.length; i++) {
+                const pageElement = pages[i];
+
+                // Add new page for subsequent elements
+                if (i > 0) {
+                    pdf.addPage();
+                }
+
+                const canvas = await html2canvas(pageElement, {
+                    scale: 2, // 2x is sufficient for most print needs (approx 192dpi)
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95); // Use JPEG for better compression/speed
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }
+
             pdf.save(`${fileName}.pdf`);
         } catch (error) {
             console.error('Error exporting PDF:', error);

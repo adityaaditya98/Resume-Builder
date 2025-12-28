@@ -1,46 +1,117 @@
-import { ArrowLeft, Download } from 'lucide-react';
-import { useState } from 'react';
+import { Download, File, Play, Undo, Redo, Save, Upload, RotateCcw } from 'lucide-react';
+import { useStore } from '../../store/useStore';
+import { useLayoutStore } from '../../store/useLayoutStore';
+import { useExport } from '../../hooks/useExport';
+import { useRef } from 'react';
 
 export const TopBar = () => {
-    const [designTitle, setDesignTitle] = useState('Untitled Design');
+    const { undo, redo, past, future } = useStore();
+    const resume = useLayoutStore(state => state.resume);
+    const setResume = useLayoutStore(state => state.setResume);
+    // const isExporting = useLayoutStore(state => state.isExporting); // Removed: Not in store
+    const { exportToPDF, isExporting } = useExport(); // Added: Get from hook
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleSave = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resume));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `${resume.name || 'resume'}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    const handleLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const json = JSON.parse(event.target?.result as string);
+                if (json.id && json.sections) {
+                    setResume(json);
+                } else {
+                    alert('Invalid resume file format');
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                alert('Error loading file');
+            }
+        };
+        reader.readAsText(file);
+    };
 
     return (
-        <div className="h-14 bg-gradient-to-r from-[#00c4cc] to-[#3d2b9d] px-4 flex items-center justify-between text-white shrink-0 shadow-lg relative z-50">
-            {/* Left Section - Navigation & Title */}
-            <div className="flex items-center gap-6">
-                <button className="flex items-center gap-2 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors group">
-                    <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                    <span className="font-medium text-sm">Home</span>
-                </button>
+        <div className="h-14 bg-[#1e1e2e] border-b border-gray-800 flex items-center justify-between px-4 z-50">
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <button className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/10 rounded-md text-gray-300 transition-colors text-sm font-medium">
+                        <File size={16} />
+                        <span>File</span>
+                    </button>
+                    <div className="h-4 w-px bg-gray-700" />
+                    <button
+                        onClick={undo}
+                        disabled={past.length === 0}
+                        className="p-1.5 hover:bg-white/10 rounded-md text-gray-300 disabled:opacity-50 transition-colors"
+                        title="Undo (Ctrl+Z)"
+                    >
+                        <Undo size={16} />
+                    </button>
+                    <button
+                        onClick={redo}
+                        disabled={future.length === 0}
+                        className="p-1.5 hover:bg-white/10 rounded-md text-gray-300 disabled:opacity-50 transition-colors"
+                        title="Redo (Ctrl+Y)"
+                    >
+                        <Redo size={16} />
+                    </button>
 
-                <div className="h-6 w-px bg-white/20"></div>
+                    <div className="h-4 w-px bg-gray-700 mx-2" />
 
-                <div className="flex items-center gap-2 text-sm text-white/80">
-                    <span className="font-medium hover:text-white cursor-pointer px-2 py-1 hover:bg-white/10 rounded transition-colors">File</span>
+                    {/* Persistence Controls */}
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/10 rounded-md text-gray-300 transition-colors text-sm font-medium"
+                        title="Load JSON"
+                    >
+                        <Upload size={16} />
+                        {/* <span>Load</span> */}
+                    </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleLoad}
+                        accept=".json"
+                        className="hidden"
+                    />
+
+                    <button
+                        onClick={handleSave}
+                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/10 rounded-md text-gray-300 transition-colors text-sm font-medium"
+                        title="Save JSON"
+                    >
+                        <Save size={16} />
+                        {/* <span>Save</span> */}
+                    </button>
                 </div>
             </div>
 
-            {/* Center Section - Title */}
-            <div className="font-semibold text-sm tracking-wide flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
-                <input
-                    type="text"
-                    value={designTitle}
-                    onChange={(e) => setDesignTitle(e.target.value)}
-                    className="bg-transparent text-white border-none focus:ring-0 text-center font-semibold placeholder-white/70 w-40"
-                    placeholder="Untitled Design"
-                />
+            {/* Title / Status */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                <span className="text-gray-400 text-sm font-medium">{resume.name || 'Untitled Resume'}</span>
             </div>
 
-            {/* Right Section - User & Actions */}
             <div className="flex items-center gap-3">
                 <button
-                    className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm backdrop-blur-sm border border-white/20"
+                    onClick={() => exportToPDF(resume.name || 'resume')}
+                    disabled={isExporting}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg shadow-lg shadow-blue-500/20 font-medium text-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                    <Download size={16} />
-                    <span>Download</span>
+                    {isExporting ? <RotateCcw className="animate-spin" size={16} /> : <Download size={16} />}
+                    <span>Export</span>
                 </button>
-
-                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 border-2 border-white cursor-pointer hover:scale-105 transition-transform shadow-md"></div>
             </div>
         </div>
     );

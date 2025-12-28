@@ -1,99 +1,95 @@
-import type { SectionData } from '../../store/ResumeTypes';
-import { EditableText } from '../UI/EditableText';
+import { Trash2, Plus } from 'lucide-react';
 import { useLayoutStore } from '../../store/useLayoutStore';
-import { Plus, Trash2 } from 'lucide-react';
+import type { SectionData } from '../../store/ResumeTypes';
 
 export const ExperienceSection = ({ section }: { section: SectionData }) => {
+    const updateSectionData = useLayoutStore(state => state.updateSectionData);
     const addSectionItem = useLayoutStore(state => state.addSectionItem);
     const removeSectionItem = useLayoutStore(state => state.removeSectionItem);
+    const accentColor = useLayoutStore(state => state.resume.styles.accentColor);
 
-    const handleAdd = () => {
+    const handleAddItem = () => {
         addSectionItem(section.id, {
-            role: 'New Role',
+            role: 'Job Title',
             company: 'Company Name',
             date: '2023 - Present',
-            description: 'Describe your key responsibilities and achievements.'
+            description: 'Key responsibility or achievement.'
         });
     };
 
     return (
-        <div className="mb-6 group/section">
-            <div className="flex items-center justify-between border-b border-gray-200 mb-4 pb-1">
-                <EditableText
-                    sectionId={section.id}
-                    itemId="title" // Special ID, conceptually section title is stored elsewhere usually, but let's assume valid
-                    field="title"
-                    value={section.title} // This actually isn't editable via EditableText cleanly without refactor, skipping for now
-                    className="text-lg font-bold text-gray-800 uppercase tracking-wider"
-                    placeholder="Section Title"
-                />
-                {/* This simply renders the title, editing section title in store schema needs a dedicated action or direct store update. 
-                     For now, let's keep section title static or editable via SidePanel settings if needed. 
-                     Actually, let's just render it static for this iteration or assume EditableText won't update it. 
-                 */}
+        <div className="p-4 group/section transition-colors hover:bg-gray-50/50 rounded-lg">
+            <div className="flex items-center justify-between mb-4 border-b border-gray-200 pb-1">
+                <h3
+                    className="font-bold text-gray-800 uppercase text-sm tracking-wider"
+                    style={{ color: accentColor }}
+                >
+                    {section.title}
+                </h3>
+                <button
+                    onClick={handleAddItem}
+                    className="opacity-0 group-hover/section:opacity-100 p-1 text-green-600 hover:bg-green-50 rounded transition-opacity"
+                    title="Add Entry"
+                >
+                    <Plus size={14} />
+                </button>
             </div>
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
                 {section.items.map(item => (
-                    <div key={item.id} className="group/item relative pl-4 border-l-2 border-transparent hover:border-gray-200 transition-colors">
-                        {/* Delete Control */}
+                    <div key={item.id} className="group/item relative pl-2 hover:border-l-2 hover:border-gray-300 transition-all">
+                        <div className="flex justify-between items-baseline mb-1">
+                            <h4
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateSectionData(section.id, item.id, { role: e.currentTarget.innerText })}
+                                className="font-bold text-gray-800 text-sm outline-none"
+                            >
+                                {item.data.role}
+                            </h4>
+                            <span
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateSectionData(section.id, item.id, { date: e.currentTarget.innerText })}
+                                className="text-xs text-gray-500 font-medium whitespace-nowrap outline-none"
+                            >
+                                {item.data.date}
+                            </span>
+                        </div>
+
+                        <div className="text-xs text-gray-600 font-medium mb-2">
+                            <span
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateSectionData(section.id, item.id, { company: e.currentTarget.innerText })}
+                                className="outline-none"
+                            >
+                                {item.data.company}
+                            </span>
+                        </div>
+
+                        <div
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateSectionData(section.id, item.id, { description: e.currentTarget.innerText })}
+                            className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap outline-none"
+                        >
+                            {item.data.description}
+                        </div>
+
                         <button
                             onClick={() => removeSectionItem(section.id, item.id)}
-                            className="absolute -left-8 top-0 p-1.5 text-red-400 opacity-0 group-hover/item:opacity-100 hover:bg-red-50 rounded"
-                            title="Remove Position"
+                            className="absolute -right-2 top-0 p-1 rounded text-red-400 opacity-0 group-hover/item:opacity-100 hover:text-red-600 hover:bg-red-50 transition-all"
                         >
-                            <Trash2 size={14} />
+                            <Trash2 size={12} />
                         </button>
-
-                        <div className="flex justify-between items-baseline mb-1">
-                            <EditableText
-                                sectionId={section.id}
-                                itemId={item.id}
-                                field="role"
-                                value={item.data.role}
-                                className="font-bold text-gray-900 text-lg"
-                                placeholder="Job Title"
-                            />
-                            <EditableText
-                                sectionId={section.id}
-                                itemId={item.id}
-                                field="date"
-                                value={item.data.date}
-                                className="text-sm text-gray-500 font-medium whitespace-nowrap"
-                                placeholder="Date Range"
-                            />
-                        </div>
-
-                        <EditableText
-                            sectionId={section.id}
-                            itemId={item.id}
-                            field="company"
-                            value={item.data.company}
-                            className="text-blue-600 font-semibold text-sm mb-2 block"
-                            placeholder="Company Name"
-                        />
-
-                        <div className="text-gray-600 text-sm leading-relaxed">
-                            <EditableText
-                                sectionId={section.id}
-                                itemId={item.id}
-                                field="description"
-                                value={item.data.description}
-                                multiline
-                                placeholder="Job description..."
-                            />
-                        </div>
                     </div>
                 ))}
-            </div>
 
-            {/* Add Button */}
-            <button
-                onClick={handleAdd}
-                className="mt-4 flex items-center gap-2 text-xs font-semibold text-blue-600 opacity-0 group-hover/section:opacity-100 transition-opacity hover:bg-blue-50 px-3 py-1.5 rounded"
-            >
-                <Plus size={14} /> Add Position
-            </button>
+                {section.items.length === 0 && (
+                    <div className="text-gray-400 text-xs italic py-2">No entries added yet.</div>
+                )}
+            </div>
         </div>
     );
 };

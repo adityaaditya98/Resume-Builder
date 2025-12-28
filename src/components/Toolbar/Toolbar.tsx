@@ -34,19 +34,19 @@ export const Toolbar = () => {
             {allText && (
                 <>
                     {/* Font Family (Mock) */}
-                    <div className="w-32">
+                    <div className="w-24">
                         <select
-                            className="w-full text-sm border-gray-300 rounded hover:bg-gray-50 cursor-pointer outline-none"
+                            className="w-full text-xs border-gray-300 rounded hover:bg-gray-50 cursor-pointer outline-none py-1"
                             value={first.fontFamily || 'Inter, sans-serif'}
                             onChange={(e) => handleUpdate({ fontFamily: e.target.value })}
                         >
                             <option value="Inter, sans-serif">Inter</option>
                             <option value="Arial, sans-serif">Arial</option>
-                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="'Times New Roman', serif">Times</option>
                             <option value="'Courier New', monospace">Courier</option>
                             <option value="Georgia, serif">Georgia</option>
-                        </select>
-                    </div>
+                        </select >
+                    </div >
 
                     <div className="h-6 w-px bg-gray-300 mx-2" />
 
@@ -252,144 +252,150 @@ export const Toolbar = () => {
                 </>
             )}
 
-            {allShape && (
-                <>
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-gray-600">Fill Color</span>
-                        <div className="relative group">
-                            <div
-                                className="w-8 h-8 rounded border border-gray-300 cursor-pointer shadow-sm"
-                                style={{ backgroundColor: first.fill }}
-                            >
-                                <input
-                                    type="color"
-                                    value={first.fill}
-                                    onChange={(e) => handleUpdate({ fill: e.target.value })}
-                                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {allImage && (
-                <>
-                    {/* Image Filters */}
-                    <div className="flex items-center gap-3">
-                        <div className="relative group">
-                            <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium text-gray-700 transition-colors">
-                                Filters
-                            </button>
-                            <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 shadow-xl rounded-lg p-3 hidden group-hover:block w-48 z-50">
-                                <div className="space-y-2">
-                                    <button
-                                        onClick={() => handleUpdate({ filter: 'none' })}
-                                        className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
-                                    >
-                                        None
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdate({ filter: 'grayscale(100%)' })}
-                                        className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
-                                    >
-                                        Grayscale
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdate({ filter: 'sepia(100%)' })}
-                                        className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
-                                    >
-                                        Sepia
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdate({ filter: 'blur(4px)' })}
-                                        className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
-                                    >
-                                        Blur
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdate({ filter: 'invert(100%)' })}
-                                        className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
-                                    >
-                                        Invert
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdate({ filter: 'brightness(1.5)' })}
-                                        className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
-                                    >
-                                        Brighten
-                                    </button>
-                                    <button
-                                        onClick={() => handleUpdate({ filter: 'contrast(200%)' })}
-                                        className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
-                                    >
-                                        High Contrast
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {showBorder && (
-                <>
-                    <div className="h-6 w-px bg-gray-300 mx-2" />
-                    {/* Border Controls */}
-                    <div className="relative group flex items-center">
-                        <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium text-gray-700 transition-colors">
-                            <div className="w-4 h-4 border-2 border-current rounded-sm" />
-                            <span>Border</span>
-                        </button>
-                        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 shadow-xl rounded-lg p-4 hidden group-hover:block w-64 z-50">
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-2">Style</label>
-                                    <div className="flex bg-gray-100 p-1 rounded-lg">
-                                        {['solid', 'dashed', 'dotted'].map((s) => (
-                                            <button
-                                                key={s}
-                                                onClick={() => handleUpdate({ borderStyle: s as any, borderWidth: first.borderWidth || 2 })}
-                                                className={clsx(
-                                                    "flex-1 py-1.5 text-xs font-medium rounded capitalize",
-                                                    first.borderStyle === s ? "bg-white shadow text-blue-600" : "text-gray-600 hover:bg-gray-200"
-                                                )}
-                                            >
-                                                {s}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-2">Width: {first.borderWidth || 0}px</label>
+            {
+                allShape && (
+                    <>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-gray-600">Fill Color</span>
+                            <div className="relative group">
+                                <div
+                                    className="w-8 h-8 rounded border border-gray-300 cursor-pointer shadow-sm"
+                                    style={{ backgroundColor: first.fill }}
+                                >
                                     <input
-                                        type="range"
-                                        min="0"
-                                        max="20"
-                                        value={first.borderWidth || 0}
-                                        onChange={(e) => handleUpdate({ borderWidth: parseInt(e.target.value) })}
-                                        className="w-full"
+                                        type="color"
+                                        value={first.fill}
+                                        onChange={(e) => handleUpdate({ fill: e.target.value })}
+                                        className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                                     />
                                 </div>
+                            </div>
+                        </div>
+                    </>
+                )
+            }
 
-                                <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-2">Color</label>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="color"
-                                            value={first.borderColor || '#000000'}
-                                            onChange={(e) => handleUpdate({ borderColor: e.target.value })}
-                                            className="w-8 h-8 rounded cursor-pointer border-0 p-0"
-                                        />
-                                        <span className="text-xs text-gray-500 uppercase">{first.borderColor || '#000'}</span>
+            {
+                allImage && (
+                    <>
+                        {/* Image Filters */}
+                        <div className="flex items-center gap-3">
+                            <div className="relative group">
+                                <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium text-gray-700 transition-colors">
+                                    Filters
+                                </button>
+                                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 shadow-xl rounded-lg p-3 hidden group-hover:block w-48 z-50">
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => handleUpdate({ filter: 'none' })}
+                                            className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                            None
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ filter: 'grayscale(100%)' })}
+                                            className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                            Grayscale
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ filter: 'sepia(100%)' })}
+                                            className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                            Sepia
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ filter: 'blur(4px)' })}
+                                            className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                            Blur
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ filter: 'invert(100%)' })}
+                                            className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                            Invert
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ filter: 'brightness(1.5)' })}
+                                            className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                            Brighten
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ filter: 'contrast(200%)' })}
+                                            className="w-full text-left px-2 py-1.5 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                            High Contrast
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </>
-            )}
+                    </>
+                )
+            }
+
+            {
+                showBorder && (
+                    <>
+                        <div className="h-6 w-px bg-gray-300 mx-2" />
+                        {/* Border Controls */}
+                        <div className="relative group flex items-center">
+                            <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium text-gray-700 transition-colors">
+                                <div className="w-4 h-4 border-2 border-current rounded-sm" />
+                                <span>Border</span>
+                            </button>
+                            <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 shadow-xl rounded-lg p-4 hidden group-hover:block w-64 z-50">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-2">Style</label>
+                                        <div className="flex bg-gray-100 p-1 rounded-lg">
+                                            {['solid', 'dashed', 'dotted'].map((s) => (
+                                                <button
+                                                    key={s}
+                                                    onClick={() => handleUpdate({ borderStyle: s as any, borderWidth: first.borderWidth || 2 })}
+                                                    className={clsx(
+                                                        "flex-1 py-1.5 text-xs font-medium rounded capitalize",
+                                                        first.borderStyle === s ? "bg-white shadow text-blue-600" : "text-gray-600 hover:bg-gray-200"
+                                                    )}
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-2">Width: {first.borderWidth || 0}px</label>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="20"
+                                            value={first.borderWidth || 0}
+                                            onChange={(e) => handleUpdate({ borderWidth: parseInt(e.target.value) })}
+                                            className="w-full"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-2">Color</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                value={first.borderColor || '#000000'}
+                                                onChange={(e) => handleUpdate({ borderColor: e.target.value })}
+                                                className="w-8 h-8 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <span className="text-xs text-gray-500 uppercase">{first.borderColor || '#000'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )
+            }
 
             {/* Animations (Common) */}
             <div className="relative group flex items-center">
@@ -450,41 +456,20 @@ export const Toolbar = () => {
             <div className="h-6 w-px bg-gray-300 mx-2" />
 
             {/* Actions */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 ml-4 border-l border-gray-300 pl-4">
                 <button
                     onClick={() => {
-                        const isLocked = first.locked;
+                        const isLocked = first?.locked;
                         handleUpdate({ locked: !isLocked });
                     }}
                     className={clsx(
                         "p-1.5 rounded hover:bg-gray-100 transition-colors",
-                        first.locked ? "text-red-500 bg-red-50" : "text-gray-600"
+                        first?.locked ? "text-red-500 bg-red-50" : "text-gray-600",
+                        !first && "opacity-0 pointer-events-none"
                     )}
-                    title={first.locked ? "Unlock" : "Lock"}
+                    title={first?.locked ? "Unlock" : "Lock"}
                 >
-                    {first.locked ? <Lock size={18} /> : <Unlock size={18} />}
-                </button>
-
-                <div className="w-px h-4 bg-gray-300 mx-1" />
-
-                <button
-                    onClick={() => {
-                        if (selectedIds.size > 1 && !first.groupId) {
-                            group();
-                        } else if (selectedElements.some(el => el.groupId)) {
-                            ungroup();
-                        }
-                    }}
-                    className={clsx(
-                        "px-2 py-1.5 rounded text-xs font-medium transition-colors border border-transparent",
-                        (selectedIds.size > 1 || selectedElements.some(el => el.groupId))
-                            ? "hover:bg-gray-100 text-gray-700"
-                            : "text-gray-300 cursor-not-allowed"
-                    )}
-                    disabled={!(selectedIds.size > 1 || selectedElements.some(el => el.groupId))}
-                    title="Group (Ctrl+G) / Ungroup (Ctrl+Shift+G)"
-                >
-                    {selectedElements.some(el => el.groupId) ? "Ungroup" : "Group"}
+                    {first?.locked ? <Lock size={16} /> : <Unlock size={16} />}
                 </button>
 
                 <div className="w-px h-4 bg-gray-300 mx-1" />
@@ -494,7 +479,7 @@ export const Toolbar = () => {
                     className="p-1.5 rounded hover:bg-gray-100 transition-colors text-gray-600"
                     title="Duplicate (Ctrl + D)"
                 >
-                    <Copy size={18} />
+                    <Copy size={16} />
                 </button>
                 <button
                     onClick={() => {

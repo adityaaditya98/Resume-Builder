@@ -13,7 +13,7 @@ export const Sidebar = () => {
     const { activeTab, setActiveTab } = useStore();
 
     return (
-        <div className="w-[72px] bg-[#0e1318] flex flex-col items-center py-4 gap-4 h-full text-gray-400 z-50">
+        <div className="w-[72px] bg-[#0e1318] flex flex-col items-center py-4 gap-4 h-full text-gray-400 z-50 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             {TABS.map((tab) => (
                 <button
                     key={tab.id}

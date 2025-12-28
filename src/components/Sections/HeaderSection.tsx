@@ -22,6 +22,44 @@ export const HeaderSection = ({ section }: { section: SectionData }) => {
         </div>
     );
 
+    if (variant === 'sidebar') {
+        return (
+            <div className="flex flex-col items-center text-center text-white mb-8">
+                {/* Avatar Placeholder */}
+                <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-white/20 mb-4 overflow-hidden shadow-lg relative cursor-pointer group">
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-400 group-hover:bg-black/20 transition-colors">
+                        <span className="opacity-0 group-hover:opacity-100 text-xs font-medium text-white">Upload</span>
+                    </div>
+                </div>
+
+                <EditableText
+                    sectionId={section.id}
+                    itemId={item.id}
+                    field="name"
+                    value={item.data.name || ''}
+                    className="text-2xl font-bold tracking-tight mb-1"
+                    placeholder="Your Name"
+                />
+                <EditableText
+                    sectionId={section.id}
+                    itemId={item.id}
+                    field="role"
+                    value={item.data.role || ''}
+                    className="text-sm font-medium tracking-wide opacity-80 mb-6 uppercase"
+                    placeholder="Role"
+                />
+
+                <div className="w-full flex flex-col gap-3 text-sm opacity-90 text-left px-2">
+                    <ContactItem icon={Mail} field="email" placeholder="Email" />
+                    <ContactItem icon={Phone} field="phone" placeholder="Phone" />
+                    <ContactItem icon={MapPin} field="location" placeholder="Location" />
+                    <ContactItem icon={Linkedin} field="linkedin" placeholder="LinkedIn" />
+                    <ContactItem icon={Globe} field="website" placeholder="Website" />
+                </div>
+            </div>
+        );
+    }
+
     if (variant === 'minimal') {
         return (
             <div className="border-b-2 border-black pb-6 mb-6">

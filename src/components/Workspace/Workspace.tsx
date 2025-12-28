@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { Canvas } from '../Canvas/Canvas';
+// import { Canvas } from '../Canvas/Canvas';
 import { DocumentCanvas } from '../LayoutBuilder/DocumentCanvas';
 import { ZoomControls } from '../Canvas/ZoomControls';
 import { useStore } from '../../store/useStore';
@@ -368,7 +368,11 @@ export const Workspace = () => {
                 onMouseLeave={handleMouseUp}
             >
                 <div className="min-w-fit min-h-fit p-[5vh] flex items-start justify-center">
-                    {useStore(s => s.activeTab) === 'layout' ? <DocumentCanvas /> : <Canvas />}
+                    {/* Always render DocumentCanvas for resume builder mode.
+                        In a full canva clone, we might toggle between <Canvas> (freeform) and <DocumentCanvas> (structured).
+                        For this specific App, we want the resume to be visible always.
+                     */}
+                    <DocumentCanvas />
                 </div>
             </div>
 

@@ -197,6 +197,45 @@ export const SidePanel = () => {
                             </div>
                         </div>
 
+                        {/* Typography Controls */}
+                        <div>
+                            <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Typography</h3>
+                            <div className="flex flex-col gap-3">
+                                {/* Font Size */}
+                                <div className="p-2 bg-gray-800 rounded">
+                                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                        <span>Font Size</span>
+                                        <span>{styles.baseFontSize}px</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="8"
+                                        max="16"
+                                        step="0.5"
+                                        value={styles.baseFontSize}
+                                        onChange={(e) => updateSettings({ styles: { ...styles, baseFontSize: parseFloat(e.target.value) } })}
+                                        className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                </div>
+                                {/* Line Height */}
+                                <div className="p-2 bg-gray-800 rounded">
+                                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                        <span>Line Height</span>
+                                        <span>{styles.lineHeight}</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="1.0"
+                                        max="2.0"
+                                        step="0.1"
+                                        value={styles.lineHeight}
+                                        onChange={(e) => updateSettings({ styles: { ...styles, lineHeight: parseFloat(e.target.value) } })}
+                                        className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Global Styles */}
                         <div>
                             <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Global Styles</h3>
@@ -218,8 +257,8 @@ export const SidePanel = () => {
                                 {/* Accent Color */}
                                 <div className="space-y-1">
                                     <label className="text-xs text-gray-400">Accent Color</label>
-                                    <div className="flex gap-2">
-                                        {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#1f2937'].map(color => (
+                                    <div className="flex gap-2 flex-wrap">
+                                        {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#1f2937', '#2c3e50', '#ffc107'].map(color => (
                                             <button
                                                 key={color}
                                                 onClick={() => useLayoutStore.getState().updateStyles({ accentColor: color })}
@@ -287,6 +326,9 @@ export const SidePanel = () => {
                                 onClick={() => {
                                     useLayoutStore.getState().updateSettings(template.settings);
                                     useLayoutStore.getState().updateStyles(template.styles);
+                                    if (template.sectionVariants) {
+                                        useLayoutStore.getState().updateSectionVariants(template.sectionVariants);
+                                    }
                                 }}
                             >
                                 <img
