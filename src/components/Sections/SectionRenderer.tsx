@@ -3,6 +3,7 @@ import { HeaderSection } from './HeaderSection';
 import { ExperienceSection } from './ExperienceSection';
 import { SkillsSection } from './SkillsSection';
 import { EducationSection } from './EducationSection';
+import { SummarySection } from './SummarySection';
 
 const SectionPlaceholder = ({ section }: { section: SectionData }) => (
     <div className="p-4 border border-dashed border-gray-200 m-2 rounded bg-gray-50/50">
@@ -29,18 +30,7 @@ export const SectionRenderer = ({ sectionId, data }: { sectionId: string, data: 
             case 'skills': return <SkillsSection section={data} />;
             case 'languages': return <SkillsSection section={data} />;     // Re-use Skills for now
             case 'custom': return <SkillsSection section={data} />;        // Re-use Skills (List) for now
-            case 'summary': return (
-                <div className="p-4 group/section transition-colors hover:bg-gray-50/50 rounded-lg">
-                    <h3 className="font-bold text-gray-800 border-b border-gray-300 mb-2 uppercase text-sm tracking-wider">{data.title}</h3>
-                    <p
-                        contentEditable
-                        suppressContentEditableWarning
-                        className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap outline-none"
-                    >
-                        {data.items[0]?.data?.text || 'Summary description...'}
-                    </p>
-                </div>
-            );
+            case 'summary': return <SummarySection section={data} />;
             default: return <SectionPlaceholder section={data} />;
         }
     } catch (error) {

@@ -99,9 +99,7 @@ export const TopBar = () => {
             </div>
 
             {/* Title / Status */}
-            <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-                <span className="text-gray-400 text-sm font-medium">{resume.name || 'Untitled Resume'}</span>
-            </div>
+
 
             <div className="flex items-center gap-3">
                 <button

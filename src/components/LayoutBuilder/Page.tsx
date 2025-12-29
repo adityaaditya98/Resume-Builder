@@ -13,6 +13,10 @@ export const Page = ({ children, pageIndex, totalPages }: { children: ReactNode,
         width: `${A4_WIDTH_PX}px`,
         height: `${A4_HEIGHT_PX}px`,
         backgroundColor: styles.pageBackgroundColor || '#ffffff',
+        fontFamily: styles.fontFamily || 'Inter, sans-serif',
+        fontSize: `${styles.baseFontSize || 11}pt`,
+        lineHeight: styles.lineHeight || 1.5,
+        color: '#1f2937', // Default text color
         transformOrigin: 'top center',
         marginBottom: '40px', // Spacing between pages
     };

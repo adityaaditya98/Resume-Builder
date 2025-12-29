@@ -4,6 +4,7 @@ import { DocumentCanvas } from '../LayoutBuilder/DocumentCanvas';
 import { ZoomControls } from '../Canvas/ZoomControls';
 import { useStore } from '../../store/useStore';
 import { Grid, HelpCircle, Maximize } from 'lucide-react';
+import { useLayoutStore } from '../../store/useLayoutStore';
 
 export const Workspace = () => {
     const { zoom, setZoom, tool } = useStore();
@@ -12,16 +13,20 @@ export const Workspace = () => {
     const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
     const [spacePressed, setSpacePressed] = useState(false);
 
-    // Initial Scroll Center
+    const resumeId = useLayoutStore(state => state.resume.id);
+    const layoutVersion = useLayoutStore(state => state.resume.settings.columns); // Proxy for layout change
+
+    // Initial Scroll Center & Reset on Template Change
     useEffect(() => {
         if (scrollContainerRef.current) {
-            const { clientWidth, clientHeight, scrollWidth, scrollHeight } = scrollContainerRef.current;
-            scrollContainerRef.current.scrollTo(
-                (scrollWidth - clientWidth) / 2,
-                (scrollHeight - clientHeight) / 2
-            );
+            // If it's a layout change, we reset to top
+            scrollContainerRef.current.scrollTop = 0;
+
+            // Optional: Center horizontally if needed, but usually top is priority for Resume
+            // const { clientWidth, scrollWidth } = scrollContainerRef.current;
+            // scrollContainerRef.current.scrollLeft = (scrollWidth - clientWidth) / 2;
         }
-    }, []);
+    }, [resumeId, layoutVersion]);
 
     // Handle Spacebar
     useEffect(() => {

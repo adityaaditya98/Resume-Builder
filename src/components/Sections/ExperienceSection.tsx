@@ -6,7 +6,7 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
     const updateSectionData = useLayoutStore(state => state.updateSectionData);
     const addSectionItem = useLayoutStore(state => state.addSectionItem);
     const removeSectionItem = useLayoutStore(state => state.removeSectionItem);
-    const accentColor = useLayoutStore(state => state.resume.styles.accentColor);
+    const { accentColor, sectionTitleAlign = 'left', sectionTitleStyle = 'simple', sectionTitleCase = 'uppercase', headingFontFamily } = useLayoutStore(state => state.resume.styles);
 
     const handleAddItem = () => {
         addSectionItem(section.id, {
@@ -17,12 +17,44 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
         });
     };
 
+    // Helper for Section Title Styles
+    const getTitleStyle = () => {
+        const baseStyle: React.CSSProperties = {
+            color: accentColor,
+            fontFamily: headingFontFamily,
+            textAlign: sectionTitleAlign,
+            textTransform: sectionTitleCase,
+        };
+
+        if (sectionTitleStyle === 'background') {
+            baseStyle.backgroundColor = accentColor;
+            baseStyle.color = '#fff';
+            baseStyle.padding = '4px 8px';
+            baseStyle.borderRadius = '2px';
+            baseStyle.display = 'inline-block'; // Needed for background to wrap text
+        } else if (sectionTitleStyle === 'underline') {
+            baseStyle.borderBottom = `2px solid ${accentColor}`;
+            baseStyle.paddingBottom = '4px';
+            baseStyle.width = '100%';
+        } else if (sectionTitleStyle === 'left-border') {
+            baseStyle.borderLeft = `4px solid ${accentColor}`;
+            baseStyle.paddingLeft = '8px';
+        } else if (sectionTitleStyle === 'box') {
+            baseStyle.border = `2px solid ${accentColor}`;
+            baseStyle.padding = '4px 8px';
+            baseStyle.display = 'inline-block';
+        }
+
+        return baseStyle;
+    }
+
     return (
-        <div className="p-4 group/section transition-colors hover:bg-gray-50/50 rounded-lg">
-            <div className="flex items-center justify-between mb-4 border-b border-gray-200 pb-1">
+        <div className={`p-4 group/section transition-colors hover:bg-gray-50/50 rounded-lg ${section.variant === 'compact' ? 'py-2' : ''}`}>
+            {/* Section Header */}
+            <div className={`flex items-center justify-between ${section.variant === 'compact' ? 'mb-2' : 'mb-4'} pb-1`}>
                 <h3
-                    className="font-bold text-gray-800 uppercase text-sm tracking-wider"
-                    style={{ color: accentColor }}
+                    className={`font-bold tracking-wider ${section.variant === 'compact' ? 'text-xs' : 'text-sm'}`}
+                    style={getTitleStyle()}
                 >
                     {section.title}
                 </h3>
@@ -35,38 +67,68 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
                 </button>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className={`flex flex-col ${section.variant === 'compact' ? 'gap-2' : 'gap-4'}`}>
                 {section.items.map(item => (
                     <div key={item.id} className="group/item relative pl-2 hover:border-l-2 hover:border-gray-300 transition-all">
-                        <div className="flex justify-between items-baseline mb-1">
-                            <h4
-                                contentEditable
-                                suppressContentEditableWarning
-                                onBlur={(e) => updateSectionData(section.id, item.id, { role: e.currentTarget.innerText })}
-                                className="font-bold text-gray-800 text-sm outline-none"
-                            >
-                                {item.data.role}
-                            </h4>
-                            <span
-                                contentEditable
-                                suppressContentEditableWarning
-                                onBlur={(e) => updateSectionData(section.id, item.id, { date: e.currentTarget.innerText })}
-                                className="text-xs text-gray-500 font-medium whitespace-nowrap outline-none"
-                            >
-                                {item.data.date}
-                            </span>
-                        </div>
-
-                        <div className="text-xs text-gray-600 font-medium mb-2">
-                            <span
-                                contentEditable
-                                suppressContentEditableWarning
-                                onBlur={(e) => updateSectionData(section.id, item.id, { company: e.currentTarget.innerText })}
-                                className="outline-none"
-                            >
-                                {item.data.company}
-                            </span>
-                        </div>
+                        {/* Wrapper for layout variants */}
+                        {section.variant === 'compact' ? (
+                            // Compact: Role | Company - Date
+                            <div className="flex flex-wrap items-baseline gap-x-2 mb-1">
+                                <h4
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => updateSectionData(section.id, item.id, { role: e.currentTarget.innerText })}
+                                    className="font-bold text-gray-800 text-xs outline-none"
+                                >
+                                    {item.data.role}
+                                </h4>
+                                <span className="text-xs text-gray-400">|</span>
+                                <span
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => updateSectionData(section.id, item.id, { company: e.currentTarget.innerText })}
+                                    className="text-xs text-gray-700 font-medium outline-none"
+                                >
+                                    {item.data.company}
+                                </span>
+                                <span className="flex-1 text-right text-[10px] text-gray-500 font-medium whitespace-nowrap">
+                                    {item.data.date}
+                                </span>
+                            </div>
+                        ) : (
+                            // Standard / Modern
+                            <>
+                                <div className="flex justify-between items-baseline mb-1">
+                                    <h4
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateSectionData(section.id, item.id, { role: e.currentTarget.innerText })}
+                                        className={`font-bold text-gray-800 ${section.variant === 'modern' ? 'text-base' : 'text-sm'} outline-none`}
+                                    >
+                                        {item.data.role}
+                                    </h4>
+                                    <span
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateSectionData(section.id, item.id, { date: e.currentTarget.innerText })}
+                                        className="text-xs text-gray-500 font-medium whitespace-nowrap outline-none"
+                                    >
+                                        {item.data.date}
+                                    </span>
+                                </div>
+                                <div className="text-xs text-gray-600 font-medium mb-1">
+                                    <span
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateSectionData(section.id, item.id, { company: e.currentTarget.innerText })}
+                                        className="outline-none"
+                                        style={{ color: section.variant === 'modern' ? accentColor : 'inherit' }}
+                                    >
+                                        {item.data.company}
+                                    </span>
+                                </div>
+                            </>
+                        )}
 
                         <div
                             contentEditable

@@ -10,9 +10,10 @@ interface EditableTextProps {
     className?: string;
     placeholder?: string;
     multiline?: boolean;
+    style?: React.CSSProperties;
 }
 
-export const EditableText = ({ sectionId, itemId, field, value, className, placeholder, multiline }: EditableTextProps) => {
+export const EditableText = ({ sectionId, itemId, field, value, className, placeholder, multiline, style }: EditableTextProps) => {
     const updateSectionData = useLayoutStore(state => state.updateSectionData);
     const [localValue, setLocalValue] = useState(value);
     const elementRef = useRef<HTMLElement>(null);
@@ -56,6 +57,7 @@ export const EditableText = ({ sectionId, itemId, field, value, className, place
                 'outline-none focus:bg-blue-50/50 focus:ring-2 ring-blue-200 rounded px-1 -mx-1 transition-all empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 cursor-text',
                 className
             )}
+            style={style}
             data-placeholder={placeholder}
         >
             {value}

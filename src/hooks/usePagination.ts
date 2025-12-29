@@ -39,9 +39,10 @@ export const usePagination = (
                 // Skip hidden sections
                 if (sections[sectionId] && !sections[sectionId].isVisible) return;
 
-                const height = heights[sectionId] || 100; // Default estimate if not measured yet
+                const height = heights[sectionId] || 80; // Estimate 80px if unknown
 
-                if (currentHeight + height > CONTENT_HEIGHT) {
+                // If adding this section exceeds content height...
+                if (currentHeight + height > CONTENT_HEIGHT && currentHeight > 0) {
                     // Overflow! Move to next page
                     currentPageForCol++;
                     currentHeight = 0;

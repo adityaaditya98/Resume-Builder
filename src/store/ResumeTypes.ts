@@ -1,5 +1,5 @@
 export type PageSize = 'A4' | 'Letter';
-export type SortVariant = 'compact' | 'expanded' | 'grid' | 'minimal' | 'classic' | 'tags' | 'list' | 'sidebar';
+export type SortVariant = 'compact' | 'expanded' | 'grid' | 'minimal' | 'classic' | 'tags' | 'list' | 'sidebar' | 'modern' | 'simple' | 'centered';
 
 export interface ResumeSettings {
     pageSize: PageSize;
@@ -10,11 +10,17 @@ export interface ResumeSettings {
 
 export interface ResumeStyles {
     fontFamily: string;
+    headingFontFamily?: string;
     accentColor: string;
     baseFontSize: number;
     lineHeight: number;
     sidebarBackgroundColor?: string;
     pageBackgroundColor?: string;
+
+    // Advanced Theme Properties
+    sectionTitleAlign?: 'left' | 'center' | 'right';
+    sectionTitleStyle?: 'simple' | 'underline' | 'box' | 'left-border' | 'background';
+    sectionTitleCase?: 'uppercase' | 'capitalize' | 'none';
 }
 
 export type SectionType =

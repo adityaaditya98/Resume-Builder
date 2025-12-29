@@ -7,8 +7,15 @@ import { useLayoutStore } from '../../store/useLayoutStore';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { LiveTemplatePreview } from './LiveTemplatePreview';
 
-const SidebarSectionItem = ({ section, toggleVisibility, deleteSection }: { section: any, toggleVisibility: any, deleteSection: any }) => {
+interface SidebarSectionItemProps {
+    section: any; // Keep generic for now if SectionData is tricky to import or just use SectionData
+    toggleVisibility: (id: string) => void;
+    deleteSection: (id: string) => void;
+}
+
+const SidebarSectionItem = ({ section, toggleVisibility, deleteSection }: SidebarSectionItemProps) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
 
     const style = {
@@ -213,7 +220,7 @@ export const SidePanel = () => {
                                         max="16"
                                         step="0.5"
                                         value={styles.baseFontSize}
-                                        onChange={(e) => updateSettings({ styles: { ...styles, baseFontSize: parseFloat(e.target.value) } })}
+                                        onChange={(e) => useLayoutStore.getState().updateStyles({ baseFontSize: parseFloat(e.target.value) })}
                                         className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
                                     />
                                 </div>
@@ -229,7 +236,7 @@ export const SidePanel = () => {
                                         max="2.0"
                                         step="0.1"
                                         value={styles.lineHeight}
-                                        onChange={(e) => updateSettings({ styles: { ...styles, lineHeight: parseFloat(e.target.value) } })}
+                                        onChange={(e) => useLayoutStore.getState().updateStyles({ lineHeight: parseFloat(e.target.value) })}
                                         className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
                                     />
                                 </div>
@@ -245,7 +252,7 @@ export const SidePanel = () => {
                                     <label className="text-xs text-gray-400">Typography</label>
                                     <select
                                         value={styles.fontFamily}
-                                        onChange={(e) => updateSettings({ fontFamily: e.target.value } as any)}
+                                        onChange={(e) => useLayoutStore.getState().updateStyles({ fontFamily: e.target.value })}
                                         className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:ring-1 focus:ring-blue-500 outline-none"
                                     >
                                         <option value="Inter">Modern (Inter)</option>
@@ -319,10 +326,12 @@ export const SidePanel = () => {
             case 'templates':
                 return (
                     <div className="grid grid-cols-2 gap-4">
+                        {/* ... */}
+
                         {RESUME_TEMPLATES.map((template) => (
                             <div
                                 key={template.id}
-                                className="group relative bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-blue-500 cursor-pointer aspect-[3/4]"
+                                className="group relative bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-blue-500 cursor-pointer"
                                 onClick={() => {
                                     useLayoutStore.getState().updateSettings(template.settings);
                                     useLayoutStore.getState().updateStyles(template.styles);
@@ -331,12 +340,8 @@ export const SidePanel = () => {
                                     }
                                 }}
                             >
-                                <img
-                                    src={template.thumbnail}
-                                    alt={template.name}
-                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                                <LiveTemplatePreview template={template} />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
                                     <span className="text-white text-xs font-medium truncate w-full">{template.name}</span>
                                 </div>
                             </div>

@@ -232,7 +232,7 @@ const DocumentCanvasContent = () => {
 
 
     return (
-        <div className="flex-1 bg-gray-100/50 overflow-auto p-8 flex flex-col items-center">
+        <div className="min-h-full flex flex-col items-center">
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCorners}
