@@ -60,15 +60,25 @@ const INITIAL_RESUME: ResumeConfig = {
     }
 };
 
+// History Entry with Metadata
+interface HistoryEntry {
+    resume: ResumeConfig;
+    action: string;
+    timestamp: number;
+}
+
+type LayoutJson = ResumeConfig['layout'];
+type ResumeSettings = ResumeConfig['settings'];
+
 interface LayoutState {
     resume: ResumeConfig;
-    previousLayout: ResumeConfig['layout'] | null; // Cache for restoring 2-col layout
-
+    previousLayout: LayoutJson | null;
 
     // Actions
-    updateSettings: (settings: Partial<ResumeConfig['settings']>) => void;
+    updateSettings: (newSettings: Partial<ResumeSettings>) => void;
     setResume: (resume: ResumeConfig) => void;
     updateStyles: (styles: Partial<ResumeConfig['styles']>) => void;
+    applyTemplateLayout: (structure: 'single' | 'sidebar' | 'columns') => void;
 
     // Layout Actions
     moveSection: (sourceColIndex: number, targetColIndex: number, sectionId: string, index: number) => void;
@@ -81,251 +91,351 @@ interface LayoutState {
     addSectionItem: (sectionId: string, data: any) => void;
     removeSectionItem: (sectionId: string, itemId: string) => void;
     updateSectionVariants: (variants: Record<string, string>) => void;
+    // History
+    past: HistoryEntry[];
+    future: HistoryEntry[];
+    undo: () => void;
+    redo: () => void;
+    // Explicit Version Restore
+    restoreVersion: (entry: HistoryEntry) => void;
 }
+
+const MAX_HISTORY = 50;
+
+// Helper to validate and clean resume data
+const validateAndClean = (resume: ResumeConfig): ResumeConfig => {
+    if (!resume || !resume.sections || !resume.layout) return resume;
+
+    const sections = resume.sections;
+    const cleanLayout = { ...resume.layout };
+
+    // 1. Remove zombie IDs from columns
+    cleanLayout.columns = cleanLayout.columns.map(col =>
+        col.filter(id => sections[id] !== undefined)
+    );
+
+    // 2. Ensure all visible sections are in a column (?)
+    // Actually, sections can be hidden/removed from layout but exist in data (unlikely in this model, but possible).
+    // For now, we trust the columns -> sections link.
+
+    return { ...resume, layout: cleanLayout };
+};
 
 export const useLayoutStore = create<LayoutState>()(
     persist(
-        (set) => ({
-            resume: INITIAL_RESUME,
-            previousLayout: null,
+        (set, get) => {
+            const createHistoryEntry = (resume: ResumeConfig, action: string): HistoryEntry => ({
+                resume: JSON.parse(JSON.stringify(resume)), // Deep copy for snapshot
+                action,
+                timestamp: Date.now()
+            });
 
-            updateSettings: (newSettings) => set((state) => {
-                const currentColumns = state.resume.settings.columns;
-                const nextColumns = newSettings.columns;
+            return {
+                resume: INITIAL_RESUME,
+                previousLayout: null,
+                past: [],
+                future: [],
 
-                let newLayout = { ...state.resume.layout };
-                let prevLayout = state.previousLayout;
+                undo: () => set((state) => {
+                    const { past, future, resume } = state;
+                    if (past.length === 0) return {};
 
-                // Case 1: Switching from 2 to 1 (Collapse)
-                if (currentColumns === 2 && nextColumns === 1) {
-                    // Save current layout before collapsing
-                    prevLayout = JSON.parse(JSON.stringify(newLayout));
+                    const previousEntry = past[past.length - 1];
+                    const newPast = past.slice(0, past.length - 1);
+                    const currentEntry = createHistoryEntry(resume, 'Undo');
 
-                    const col0 = [...newLayout.columns[0]];
-                    const col1 = [...newLayout.columns[1]];
-                    // Merge into single column
-                    newLayout.columns = [[...col0, ...col1]];
-                }
-                // Case 2: Switching from 1 to 2 (Restore)
-                else if (currentColumns === 1 && nextColumns === 2) {
-                    if (prevLayout && prevLayout.columns.length === 2) {
-                        // Restore from cache if available
-                        newLayout = prevLayout;
+                    return {
+                        resume: previousEntry.resume,
+                        past: newPast,
+                        future: [currentEntry, ...future]
+                    };
+                }),
 
-                        // Validate restoration: Ensure no IDs are lost or duplicated if items were added/removed in 1-col mode
-                        const currentIds = new Set(state.resume.layout.columns[0]);
-                        const restoredIds = new Set([...newLayout.columns[0], ...newLayout.columns[1]]);
+                redo: () => set((state) => {
+                    const { past, future, resume } = state;
+                    if (future.length === 0) return {};
 
-                        // Find new items added while in 1-col mode
-                        const brandNewIds = [...currentIds].filter(id => !restoredIds.has(id));
+                    const nextEntry = future[0];
+                    const newFuture = future.slice(1);
+                    const currentEntry = createHistoryEntry(resume, 'Redo');
 
-                        // Find items deleted while in 1-col mode
-                        newLayout.columns[0] = newLayout.columns[0].filter(id => currentIds.has(id));
-                        newLayout.columns[1] = newLayout.columns[1].filter(id => currentIds.has(id));
+                    return {
+                        resume: nextEntry.resume,
+                        past: [...past, currentEntry],
+                        future: newFuture
+                    };
+                }),
 
-                        // Append new items to main column (Col 1)
-                        if (brandNewIds.length > 0) {
-                            newLayout.columns[1] = [...newLayout.columns[1], ...brandNewIds];
+                restoreVersion: (entry) => set((state) => {
+                    // When restoring a specific version, we treat it like a new "Restore" action
+                    // so we can undo it.
+                    const currentEntry = createHistoryEntry(state.resume, `Restored to ${new Date(entry.timestamp).toLocaleTimeString()}`);
+                    return {
+                        resume: entry.resume,
+                        past: [...state.past, currentEntry],
+                        future: []
+                    };
+                }),
+
+                updateSettings: (newSettings) => set((state) => {
+                    const past = [...state.past, createHistoryEntry(state.resume, 'Update Settings')].slice(-MAX_HISTORY);
+
+                    const currentColumns = state.resume.settings.columns;
+                    const nextColumns = newSettings.columns;
+
+                    let newLayout = { ...state.resume.layout };
+                    let prevLayout = state.previousLayout;
+
+                    if (currentColumns === 2 && nextColumns === 1) {
+                        prevLayout = JSON.parse(JSON.stringify(newLayout));
+                        const col0 = [...newLayout.columns[0]];
+                        const col1 = [...newLayout.columns[1]];
+                        newLayout.columns = [[...col0, ...col1]];
+                    }
+                    else if (currentColumns === 1 && nextColumns === 2) {
+                        if (prevLayout && prevLayout.columns.length === 2) {
+                            newLayout = prevLayout;
+                            const currentIds = new Set(state.resume.layout.columns[0]);
+                            const restoredIds = new Set([...newLayout.columns[0], ...newLayout.columns[1]]);
+                            const brandNewIds = [...currentIds].filter(id => !restoredIds.has(id));
+                            newLayout.columns[0] = newLayout.columns[0].filter(id => currentIds.has(id));
+                            newLayout.columns[1] = newLayout.columns[1].filter(id => currentIds.has(id));
+                            if (brandNewIds.length > 0) {
+                                newLayout.columns[1] = [...newLayout.columns[1], ...brandNewIds];
+                            }
+                        } else {
+                            const allSections = state.resume.sections;
+                            const currentIds = newLayout.columns[0];
+                            const col0Ids: string[] = [];
+                            const col1Ids: string[] = [];
+                            currentIds.forEach(id => {
+                                const section = allSections[id];
+                                if (!section) return;
+                                if (['header', 'skills', 'languages', 'custom'].includes(section.type)) {
+                                    col0Ids.push(id);
+                                } else {
+                                    col1Ids.push(id);
+                                }
+                            });
+                            newLayout.columns = [col0Ids, col1Ids];
                         }
+                    }
 
-                    } else {
-                        // Fallback Heuristic if no cache (Legacy behavior)
-                        const allSections = state.resume.sections;
-                        const currentIds = newLayout.columns[0];
+                    if (nextColumns === 1 && newLayout.columns.length !== 1) {
+                        newLayout.columns = [newLayout.columns.flat()];
+                    }
 
-                        const col0Ids: string[] = []; // Sidebar
-                        const col1Ids: string[] = []; // Main
+                    return {
+                        past,
+                        future: [],
+                        previousLayout: prevLayout,
+                        resume: {
+                            ...state.resume,
+                            settings: { ...state.resume.settings, ...newSettings },
+                            layout: newLayout
+                        }
+                    };
+                }),
 
-                        currentIds.forEach(id => {
-                            const section = allSections[id];
-                            if (!section) return; // Cleanup zombie IDs
+                setResume: (resume) => set((state) => ({
+                    resume: validateAndClean(resume),
+                    past: [...state.past, createHistoryEntry(state.resume, 'Load Resume')].slice(-MAX_HISTORY),
+                    future: []
+                })),
 
-                            // Heuristic: Keep typically small/sidebar items in Col 0, move heavy content to Col 1
+                updateStyles: (newStyles) => set((state) => ({
+                    past: [...state.past, createHistoryEntry(state.resume, 'Update Styles')].slice(-MAX_HISTORY),
+                    future: [],
+                    resume: { ...state.resume, styles: { ...state.resume.styles, ...newStyles } }
+                })),
+
+                applyTemplateLayout: (structure) => set((state) => {
+                    const past = [...state.past, createHistoryEntry(state.resume, 'Change Template Layout')].slice(-MAX_HISTORY);
+                    let newColumns: string[][] = [];
+                    const sections = state.resume.sections;
+
+                    if (structure === 'single') {
+                        const flattened = state.resume.layout.columns.flat();
+                        const uniqueIds = Array.from(new Set(flattened)).filter(id => sections[id]);
+                        newColumns = [uniqueIds];
+                    } else if (structure === 'sidebar') {
+                        const col0: string[] = [];
+                        const col1: string[] = [];
+                        const flattened = state.resume.layout.columns.flat();
+                        const uniqueIds = Array.from(new Set(flattened)).filter(id => sections[id]);
+                        uniqueIds.forEach(id => {
+                            const section = sections[id];
                             if (['header', 'skills', 'languages', 'custom'].includes(section.type)) {
-                                col0Ids.push(id);
+                                col0.push(id);
                             } else {
-                                col1Ids.push(id);
+                                col1.push(id);
                             }
                         });
-
-                        newLayout.columns = [col0Ids, col1Ids];
+                        newColumns = [col0, col1];
+                    } else {
+                        newColumns = [state.resume.layout.columns.flat()];
                     }
-                }
 
-                // Safety Check: Ensure columns array structure matches settings
-                if (nextColumns === 1 && newLayout.columns.length !== 1) {
-                    newLayout.columns = [newLayout.columns.flat()];
-                }
-
-                return {
-                    previousLayout: prevLayout,
-                    resume: {
-                        ...state.resume,
-                        settings: { ...state.resume.settings, ...newSettings },
-                        layout: newLayout
-                    }
-                };
-            }),
-
-            updateStyles: (newStyles) => set((state) => ({
-                resume: { ...state.resume, styles: { ...state.resume.styles, ...newStyles } }
-            })),
-
-            moveSection: (sourceColIndex, targetColIndex, sectionId, targetIndex) => set((state) => {
-                const newColumns = [...state.resume.layout.columns];
-
-                // Remove from source
-                const sourceCol = newColumns[sourceColIndex].filter(id => id !== sectionId);
-                newColumns[sourceColIndex] = sourceCol;
-
-                // Insert into target
-                const targetCol = [...newColumns[targetColIndex]];
-                targetCol.splice(targetIndex, 0, sectionId);
-                newColumns[targetColIndex] = targetCol;
-
-                return { resume: { ...state.resume, layout: { ...state.resume.layout, columns: newColumns } } };
-            }),
-
-            toggleSectionVisibility: (sectionId) => set((state) => ({
-                resume: {
-                    ...state.resume,
-                    sections: {
-                        ...state.resume.sections,
-                        [sectionId]: {
-                            ...state.resume.sections[sectionId],
-                            isVisible: !state.resume.sections[sectionId].isVisible
+                    return {
+                        past,
+                        future: [],
+                        resume: {
+                            ...state.resume,
+                            layout: { ...state.resume.layout, columns: newColumns },
+                            settings: {
+                                ...state.resume.settings,
+                                columns: structure === 'sidebar' ? 2 : 1
+                            }
                         }
-                    }
-                }
-            })),
+                    };
+                }),
 
-            addSection: (type: SectionType, title: string) => set((state) => {
-                const id = uuidv4();
+                moveSection: (sourceColIndex, targetColIndex, sectionId, targetIndex) => set((state) => {
+                    const past = [...state.past, createHistoryEntry(state.resume, 'Move Section')].slice(-MAX_HISTORY);
+                    const newColumns = [...state.resume.layout.columns];
+                    const sourceCol = newColumns[sourceColIndex].filter(id => id !== sectionId);
+                    newColumns[sourceColIndex] = sourceCol;
+                    const targetCol = [...newColumns[targetColIndex]];
+                    targetCol.splice(targetIndex, 0, sectionId);
+                    newColumns[targetColIndex] = targetCol;
+                    return {
+                        past,
+                        future: [],
+                        resume: { ...state.resume, layout: { ...state.resume.layout, columns: newColumns } }
+                    };
+                }),
 
-                // Auto-increment title logic
-                const existingCount = Object.values(state.resume.sections).filter(s => s.type === type).length;
-                const finalTitle = existingCount > 0 ? `${title} ${existingCount + 1}` : title;
-
-                const newSection: SectionData = {
-                    id,
-                    type,
-                    title: finalTitle,
-                    isVisible: true,
-                    variant: type === 'skills' ? 'tags' : 'expanded',
-                    items: []
-                };
-
-                // Add to first column by default
-                const newColumns = [...state.resume.layout.columns];
-                newColumns[0] = [...newColumns[0], id];
-
-                return {
-                    resume: {
-                        ...state.resume,
-                        layout: { ...state.resume.layout, columns: newColumns },
-                        sections: { ...state.resume.sections, [id]: newSection }
-                    }
-                };
-            }),
-
-            deleteSection: (sectionId: string) => set((state) => {
-                const newSections = { ...state.resume.sections };
-                delete newSections[sectionId];
-
-                const newColumns = state.resume.layout.columns.map(col =>
-                    col.filter(id => id !== sectionId)
-                );
-
-                return {
-                    resume: {
-                        ...state.resume,
-                        layout: { ...state.resume.layout, columns: newColumns },
-                        sections: newSections
-                    }
-                };
-            }),
-
-            updateSectionData: (sectionId, itemId, data) => set((state) => ({
-                resume: {
-                    ...state.resume,
-                    sections: {
-                        ...state.resume.sections,
-                        [sectionId]: {
-                            ...state.resume.sections[sectionId],
-                            items: state.resume.sections[sectionId].items.map(item =>
-                                item.id === itemId ? { ...item, data: { ...item.data, ...data } } : item
-                            )
-                        }
-                    }
-                }
-            })),
-
-            addSectionItem: (sectionId, data) => set((state) => {
-                const section = state.resume.sections[sectionId];
-                let defaultData = data;
-
-                // Smart defaults based on type if data is generic
-                if (section) {
-                    if (section.type === 'skills' || section.type === 'languages' || section.type === 'custom') {
-                        defaultData = { name: 'New Item', ...data };
-                    } else if (section.type === 'experience' || section.type === 'projects') {
-                        defaultData = {
-                            role: 'Title/Role',
-                            company: 'Company/Project',
-                            date: 'Date',
-                            description: 'Description...',
-                            ...data
-                        };
-                    } else if (section.type === 'education') {
-                        defaultData = {
-                            school: 'School Name',
-                            degree: 'Degree',
-                            year: 'Year',
-                            ...data
-                        };
-                    }
-                }
-
-                return {
+                toggleSectionVisibility: (sectionId) => set((state) => ({
+                    past: [...state.past, createHistoryEntry(state.resume, 'Toggle Visibility')].slice(-MAX_HISTORY),
+                    future: [],
                     resume: {
                         ...state.resume,
                         sections: {
                             ...state.resume.sections,
                             [sectionId]: {
                                 ...state.resume.sections[sectionId],
-                                items: [...state.resume.sections[sectionId].items, { id: uuidv4(), isVisible: true, data: defaultData }]
+                                isVisible: !state.resume.sections[sectionId].isVisible
                             }
                         }
                     }
-                };
-            }),
+                })),
 
-            removeSectionItem: (sectionId, itemId) => set((state) => ({
-                resume: {
-                    ...state.resume,
-                    sections: {
-                        ...state.resume.sections,
-                        [sectionId]: {
-                            ...state.resume.sections[sectionId],
-                            items: state.resume.sections[sectionId].items.filter(item => item.id !== itemId)
+                addSection: (type: SectionType, title: string) => set((state) => {
+                    const past = [...state.past, createHistoryEntry(state.resume, `Add ${title}`)].slice(-MAX_HISTORY);
+                    const id = uuidv4();
+                    const existingCount = Object.values(state.resume.sections).filter(s => s.type === type).length;
+                    const finalTitle = existingCount > 0 ? `${title} ${existingCount + 1}` : title;
+                    const newSection: SectionData = {
+                        id, type, title: finalTitle, isVisible: true, variant: type === 'skills' ? 'tags' : 'expanded', items: []
+                    };
+                    const newColumns = [...state.resume.layout.columns];
+                    newColumns[0] = [...newColumns[0], id];
+                    return {
+                        past,
+                        future: [],
+                        resume: {
+                            ...state.resume,
+                            layout: { ...state.resume.layout, columns: newColumns },
+                            sections: { ...state.resume.sections, [id]: newSection }
+                        }
+                    };
+                }),
+
+                deleteSection: (sectionId: string) => set((state) => {
+                    const past = [...state.past, createHistoryEntry(state.resume, 'Delete Section')].slice(-MAX_HISTORY);
+                    const newSections = { ...state.resume.sections };
+                    delete newSections[sectionId];
+                    const newColumns = state.resume.layout.columns.map(col => col.filter(id => id !== sectionId));
+                    return {
+                        past,
+                        future: [],
+                        resume: {
+                            ...state.resume,
+                            layout: { ...state.resume.layout, columns: newColumns },
+                            sections: newSections
+                        }
+                    };
+                }),
+
+                updateSectionData: (sectionId, itemId, data) => set((state) => ({
+                    past: [...state.past, createHistoryEntry(state.resume, 'Edit Content')].slice(-MAX_HISTORY),
+                    future: [],
+                    resume: {
+                        ...state.resume,
+                        sections: {
+                            ...state.resume.sections,
+                            [sectionId]: {
+                                ...state.resume.sections[sectionId],
+                                items: state.resume.sections[sectionId].items.map(item =>
+                                    item.id === itemId ? { ...item, data: { ...item.data, ...data } } : item
+                                )
+                            }
                         }
                     }
-                }
-            })),
+                })),
 
-            updateSectionVariants: (variants) => set((state) => {
-                const newSections = { ...state.resume.sections };
-                Object.entries(variants).forEach(([id, variant]) => {
-                    if (newSections[id]) {
-                        newSections[id] = { ...newSections[id], variant: variant as any };
+                addSectionItem: (sectionId, data) => set((state) => {
+                    const past = [...state.past, createHistoryEntry(state.resume, 'Add Item')].slice(-MAX_HISTORY);
+                    const section = state.resume.sections[sectionId];
+                    let defaultData = data;
+                    if (section) {
+                        if (section.type === 'skills' || section.type === 'languages' || section.type === 'custom') {
+                            defaultData = { name: 'New Item', ...data };
+                        } else if (section.type === 'experience' || section.type === 'projects') {
+                            defaultData = { role: 'Title/Role', company: 'Company/Project', date: 'Date', description: 'Description...', ...data };
+                        } else if (section.type === 'education') {
+                            defaultData = { school: 'School Name', degree: 'Degree', year: 'Year', ...data };
+                        }
                     }
-                });
-                return { resume: { ...state.resume, sections: newSections } };
-            })
-        }),
+                    return {
+                        past,
+                        future: [],
+                        resume: {
+                            ...state.resume,
+                            sections: {
+                                ...state.resume.sections,
+                                [sectionId]: {
+                                    ...state.resume.sections[sectionId],
+                                    items: [...state.resume.sections[sectionId].items, { id: uuidv4(), isVisible: true, data: defaultData }]
+                                }
+                            }
+                        }
+                    };
+                }),
+
+                removeSectionItem: (sectionId, itemId) => set((state) => ({
+                    past: [...state.past, createHistoryEntry(state.resume, 'Remove Item')].slice(-MAX_HISTORY),
+                    future: [],
+                    resume: {
+                        ...state.resume,
+                        sections: {
+                            ...state.resume.sections,
+                            [sectionId]: {
+                                ...state.resume.sections[sectionId],
+                                items: state.resume.sections[sectionId].items.filter(item => item.id !== itemId)
+                            }
+                        }
+                    }
+                })),
+
+                updateSectionVariants: (variants) => set((state) => {
+                    const past = [...state.past, createHistoryEntry(state.resume, 'Layout Variant')].slice(-MAX_HISTORY);
+                    const newSections = { ...state.resume.sections };
+                    Object.entries(variants).forEach(([id, variant]) => {
+                        if (newSections[id]) {
+                            newSections[id] = { ...newSections[id], variant: variant as any };
+                        }
+                    });
+                    return { past, future: [], resume: { ...state.resume, sections: newSections } };
+                })
+            };
+        },
         {
-            name: 'resume-storage', // unique name
-            partialize: (state) => ({ resume: state.resume }), // persist only resume data
+            name: 'resume-storage',
+            partialize: (state) => ({
+                resume: state.resume,
+                past: state.past // Persist Undo History!
+            }),
         }
     )
 );

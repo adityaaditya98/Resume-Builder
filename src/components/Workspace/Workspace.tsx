@@ -88,13 +88,13 @@ export const Workspace = () => {
             } else if (isCtrl && (e.key === 'z' || e.key === 'Z')) {
                 e.preventDefault();
                 if (e.shiftKey) {
-                    useStore.getState().redo();
+                    useLayoutStore.getState().redo();
                 } else {
-                    useStore.getState().undo();
+                    useLayoutStore.getState().undo();
                 }
             } else if (isCtrl && (e.key === 'y' || e.key === 'Y')) {
                 e.preventDefault();
-                useStore.getState().redo();
+                useLayoutStore.getState().redo();
             } else if ((e.key === 'Delete' || e.key === 'Backspace')) {
                 e.preventDefault();
                 const selectedIds = Array.from(useStore.getState().selectedIds);

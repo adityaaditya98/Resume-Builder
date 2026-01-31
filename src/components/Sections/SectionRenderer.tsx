@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { SectionData } from '../../store/ResumeTypes';
 import { HeaderSection } from './HeaderSection';
 import { ExperienceSection } from './ExperienceSection';
@@ -12,7 +13,8 @@ const SectionPlaceholder = ({ section }: { section: SectionData }) => (
     </div>
 );
 
-export const SectionRenderer = ({ sectionId, data }: { sectionId: string, data: SectionData }) => {
+// Optimize: Only re-render if data actually changes
+export const SectionRenderer = memo(({ sectionId, data }: { sectionId: string, data: SectionData }) => {
     // Safety check: Logic in store might sometimes reference a section that hasn't fully hydrated or was deleted
     if (!data) {
         console.warn(`SectionRenderer: Missing data for sectionId ${sectionId}`);
@@ -37,4 +39,10 @@ export const SectionRenderer = ({ sectionId, data }: { sectionId: string, data: 
         console.error(`Error rendering section ${data.id}:`, error);
         return <div className="p-4 text-red-500 text-xs">Error loading section</div>;
     }
-};
+}, (prev, next) => {
+    // Custom comparison to avoid deep check if reference is same
+    // BUT since we create new objects on update, ref equality is usually enough check for "did it change".
+    // HOWEVER, Drag & Drop often creates new refs for parent containers but data might be same.
+    // Let's use deep comparison because sections are complex objects but not huge.
+    return JSON.stringify(prev.data) === JSON.stringify(next.data);
+});

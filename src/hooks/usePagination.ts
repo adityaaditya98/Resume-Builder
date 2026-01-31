@@ -43,6 +43,10 @@ export const usePagination = (
 
                 // If adding this section exceeds content height...
                 if (currentHeight + height > CONTENT_HEIGHT && currentHeight > 0) {
+                    // Check if item ITSELF is larger than page, which causes inevitable overflow
+                    if (height > CONTENT_HEIGHT) {
+                        console.warn(`[Pagination] Section ${sectionId} is larger than page (${height}px). Content will overflow.`);
+                    }
                     // Overflow! Move to next page
                     currentPageForCol++;
                     currentHeight = 0;

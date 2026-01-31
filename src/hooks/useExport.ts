@@ -71,7 +71,7 @@ export const useExport = () => {
                 }
 
                 const canvas = await html2canvas(pageElement, {
-                    scale: 2, // 2x is sufficient for most print needs (approx 192dpi)
+                    scale: 3, // 3x for print quality
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff'

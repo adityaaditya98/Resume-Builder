@@ -23,7 +23,7 @@ export const Page = ({ children, pageIndex, totalPages }: { children: ReactNode,
 
     return (
         <div
-            className="shadow-2xl relative flex overflow-hidden ring-1 ring-black/5"
+            className="shadow-2xl relative flex ring-1 ring-black/5"
             style={style}
             data-page={pageIndex}
         >

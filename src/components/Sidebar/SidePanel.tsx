@@ -338,6 +338,9 @@ export const SidePanel = () => {
                                     if (template.sectionVariants) {
                                         useLayoutStore.getState().updateSectionVariants(template.sectionVariants);
                                     }
+                                    if (template.layout && template.layout.structure) {
+                                        useLayoutStore.getState().applyTemplateLayout(template.layout.structure);
+                                    }
                                 }}
                             >
                                 <LiveTemplatePreview template={template} />
@@ -382,6 +385,40 @@ export const SidePanel = () => {
                                 <p>No images uploaded yet.</p>
                             </div>
                         )}
+                    </div>
+                );
+            case 'history':
+                const history = useLayoutStore.getState().past;
+                const restoreVersion = useLayoutStore.getState().restoreVersion;
+                return (
+                    <div className="flex flex-col gap-4">
+                        <div className="text-xs text-gray-400">
+                            Recent Changes ({history.length})
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            {[...history].reverse().map((entry, idx) => (
+                                <div key={entry.timestamp + idx} className="p-3 bg-gray-800 rounded border border-gray-700 hover:border-blue-500 transition-colors group">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className="text-sm font-medium text-white">{entry.action}</span>
+                                        <span className="text-[10px] text-gray-500">{new Date(entry.timestamp).toLocaleTimeString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-2">
+                                        <span className="text-[10px] text-gray-500">{entry.resume.layout.columns.length} Cols • {Object.keys(entry.resume.sections).length} Sections</span>
+                                        <button
+                                            onClick={() => restoreVersion(entry)}
+                                            className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded hover:bg-blue-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                        >
+                                            Restore
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {history.length === 0 && (
+                                <div className="text-center text-gray-500 py-8">
+                                    No changes recorded yet.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 );
             case 'projects':

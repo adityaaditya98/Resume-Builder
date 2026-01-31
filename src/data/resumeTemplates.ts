@@ -14,6 +14,7 @@ interface ThemeJson {
 interface LayoutJson {
     id: string;
     name: string;
+    structure: 'single' | 'sidebar' | 'columns';
     settings: Partial<ResumeSettings>;
 }
 
@@ -36,6 +37,7 @@ const LAYOUTS: Record<string, LayoutJson> = {
     SINGLE_COL: {
         id: 'single-col',
         name: 'Single Column',
+        structure: 'single',
         settings: {
             columns: 1,
             margins: 25,
@@ -45,6 +47,7 @@ const LAYOUTS: Record<string, LayoutJson> = {
     DOUBLE_COL_SIDEBAR: {
         id: 'double-col-sidebar',
         name: 'Sidebar Layout',
+        structure: 'sidebar',
         settings: {
             columns: 2,
             columnRatio: 35, // 35% sidebar
@@ -55,6 +58,7 @@ const LAYOUTS: Record<string, LayoutJson> = {
     DOUBLE_COL_NARROW: {
         id: 'double-col-narrow',
         name: 'Narrow Sidebar',
+        structure: 'sidebar',
         settings: {
             columns: 2,
             columnRatio: 25,
@@ -65,6 +69,7 @@ const LAYOUTS: Record<string, LayoutJson> = {
     COMPACT_SINGLE: {
         id: 'compact-single',
         name: 'Compact Single',
+        structure: 'single',
         settings: {
             columns: 1,
             margins: 15,
