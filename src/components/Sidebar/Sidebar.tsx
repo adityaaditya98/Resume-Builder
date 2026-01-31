@@ -1,10 +1,11 @@
-import { LayoutTemplate, Upload, FolderOpen, Columns, History } from 'lucide-react';
+import { LayoutTemplate, Upload, FolderOpen, Columns, History, Shapes } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import clsx from 'clsx';
 
 const TABS = [
     { id: 'templates', icon: LayoutTemplate, label: 'Templates' },
     { id: 'layout', icon: Columns, label: 'Layout' },
+    { id: 'elements', icon: Shapes, label: 'Elements' },
     { id: 'history', icon: History, label: 'History' },
     { id: 'uploads', icon: Upload, label: 'Uploads' },
     { id: 'projects', icon: FolderOpen, label: 'Projects' },

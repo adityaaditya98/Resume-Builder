@@ -19,7 +19,7 @@ import {
     Briefcase, GraduationCap, FileText
 } from 'lucide-react';
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, React.ElementType> = {
     'heart': Heart, 'star': Star, 'user': User, 'mail': Mail, 'phone': Phone,
     'globe': Globe, 'map-pin': MapPin, 'camera': Camera, 'image': ImageIcon,
     'music': Music, 'video': Video, 'folder': Folder, 'file': File,

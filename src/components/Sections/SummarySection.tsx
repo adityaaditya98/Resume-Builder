@@ -63,7 +63,7 @@ export const SummarySection = ({ section }: { section: SectionData }) => {
                 className={`text-sm text-gray-700 leading-relaxed whitespace-pre-wrap outline-none ${section.variant === 'expanded' ? 'text-base' : ''}`}
                 style={{ textAlign: section.variant === 'centered' ? 'center' : 'left' }}
             >
-                {item.data.text || 'Professional summary...'}
+                {(item.data.text as string) || 'Professional summary...'}
             </div>
         </div>
     );

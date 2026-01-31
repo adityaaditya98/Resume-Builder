@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ResumeConfig, SectionType, SectionData } from './ResumeTypes';
+import type { ResumeConfig, SectionType, SectionData, SortVariant } from './ResumeTypes';
 import { v4 as uuidv4 } from 'uuid';
 
 // MOCK INITIAL DATA (Simulating Backend Response)
@@ -87,8 +87,8 @@ interface LayoutState {
     deleteSection: (sectionId: string) => void;
 
     // Content Actions
-    updateSectionData: (sectionId: string, itemId: string, data: any) => void;
-    addSectionItem: (sectionId: string, data: any) => void;
+    updateSectionData: (sectionId: string, itemId: string, data: Record<string, unknown>) => void;
+    addSectionItem: (sectionId: string, data: Record<string, unknown>) => void;
     removeSectionItem: (sectionId: string, itemId: string) => void;
     updateSectionVariants: (variants: Record<string, string>) => void;
     // History
@@ -123,7 +123,7 @@ const validateAndClean = (resume: ResumeConfig): ResumeConfig => {
 
 export const useLayoutStore = create<LayoutState>()(
     persist(
-        (set, get) => {
+        (set) => {
             const createHistoryEntry = (resume: ResumeConfig, action: string): HistoryEntry => ({
                 resume: JSON.parse(JSON.stringify(resume)), // Deep copy for snapshot
                 action,
@@ -423,7 +423,7 @@ export const useLayoutStore = create<LayoutState>()(
                     const newSections = { ...state.resume.sections };
                     Object.entries(variants).forEach(([id, variant]) => {
                         if (newSections[id]) {
-                            newSections[id] = { ...newSections[id], variant: variant as any };
+                            newSections[id] = { ...newSections[id], variant: variant as SortVariant };
                         }
                     });
                     return { past, future: [], resume: { ...state.resume, sections: newSections } };

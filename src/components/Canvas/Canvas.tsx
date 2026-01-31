@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Moveable from 'react-moveable';
 import { useStore } from '../../store/useStore';
 import type { CanvasElement } from '../../store/useStore';
@@ -8,8 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const Canvas = () => {
     const { elements, selectedIds, setSelectedIds, clearSelection, updateElement, addElement, zoom, canvasWidth, canvasHeight } = useStore();
-    const targetRef = useRef<HTMLDivElement>(null);
-
+    const [container, setContainer] = useState<HTMLDivElement | null>(null);
     const [dragSelection, setDragSelection] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
@@ -59,7 +58,8 @@ export const Canvas = () => {
 
     const handleMouseDown = (e: React.MouseEvent) => {
         // Only start drag selection if clicking directly on bg
-        if (e.target === targetRef.current || e.target === document.getElementById('canvas-content')) {
+        // Use container (state ref) instead of targetRef.current
+        if (e.target === container || e.target === document.getElementById('canvas-content')) {
             const canvasRect = e.currentTarget.getBoundingClientRect();
             const x = (e.clientX - canvasRect.left) / zoom;
             const y = (e.clientY - canvasRect.top) / zoom;
@@ -169,8 +169,6 @@ export const Canvas = () => {
         }
     };
 
-    // Delete handler removed (handled in Workspace.tsx)
-
     // Get selected DOM elements for Moveable (exclude locked)
     const selectedTargets = elements
         .filter(el => selectedIds.has(el.id) && !el.locked)
@@ -230,7 +228,7 @@ export const Canvas = () => {
 
                     setContextMenu({ x: e.clientX, y: e.clientY });
                 }}
-                ref={targetRef}
+                ref={setContainer}
             >
                 {/* Grid/Background could go here */}
 
@@ -258,7 +256,7 @@ export const Canvas = () => {
                 {selectedTargets.length > 0 && (
                     <Moveable
                         target={selectedTargets.length === 1 ? selectedTargets[0] : selectedTargets}
-                        container={targetRef.current}
+                        container={container}
                         draggable={true}
                         resizable={true}
                         rotatable={true}

@@ -1,16 +1,19 @@
 import { useStore } from '../../store/useStore';
 import { RESUME_TEMPLATES } from '../../data/resumeTemplates';
 
-import { Upload, FileText, Trash2, Columns, Square, GripVertical, Eye, EyeOff } from 'lucide-react';
+import { Upload, FileText, Trash2, Columns, Square, GripVertical, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { useRef } from 'react';
 import { useLayoutStore } from '../../store/useLayoutStore';
+import { generateRandomTheme } from '../../utils/themeGenerator';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { LiveTemplatePreview } from './LiveTemplatePreview';
 
+import type { SectionData } from '../../store/ResumeTypes';
+
 interface SidebarSectionItemProps {
-    section: any; // Keep generic for now if SectionData is tricky to import or just use SectionData
+    section: SectionData;
     toggleVisibility: (id: string) => void;
     deleteSection: (id: string) => void;
 }
@@ -144,7 +147,7 @@ export const SidePanel = () => {
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'layout':
+            case 'layout': {
                 // Derive ordered sections from layout columns
                 // Flatten columns to get order
                 const orderedSectionIds = columns === 1
@@ -245,7 +248,19 @@ export const SidePanel = () => {
 
                         {/* Global Styles */}
                         <div>
-                            <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Global Styles</h3>
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Global Styles</h3>
+                                <button
+                                    onClick={() => {
+                                        const theme = generateRandomTheme();
+                                        useLayoutStore.getState().updateStyles(theme);
+                                    }}
+                                    className="text-xs text-purple-400 font-medium hover:text-purple-300 flex items-center gap-1 transition-colors"
+                                >
+                                    <Sparkles size={12} />
+                                    <span>Randomize</span>
+                                </button>
+                            </div>
                             <div className="flex flex-col gap-3">
                                 {/* Font Family */}
                                 <div className="space-y-1">
@@ -258,6 +273,23 @@ export const SidePanel = () => {
                                         <option value="Inter">Modern (Inter)</option>
                                         <option value="Merriweather">Serif (Merriweather)</option>
                                         <option value="Roboto">Clean (Roboto)</option>
+                                    </select>
+                                </div>
+
+                                {/* Heading Font Family */}
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-400">Heading Font</label>
+                                    <select
+                                        value={styles.headingFontFamily || styles.fontFamily}
+                                        onChange={(e) => useLayoutStore.getState().updateStyles({ headingFontFamily: e.target.value })}
+                                        className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                                    >
+                                        <option value="">Same as Body</option>
+                                        <option value="Inter">Modern (Inter)</option>
+                                        <option value="Merriweather">Serif (Merriweather)</option>
+                                        <option value="Roboto">Clean (Roboto)</option>
+                                        <option value="Playfair Display">Elegant (Playfair)</option>
+                                        <option value="Montserrat">Bold (Montserrat)</option>
                                     </select>
                                 </div>
 
@@ -292,7 +324,7 @@ export const SidePanel = () => {
                                         {['Experience', 'Education', 'Projects', 'Skills', 'Languages', 'Custom'].map(type => (
                                             <button
                                                 key={type}
-                                                onClick={() => useLayoutStore.getState().addSection(type.toLowerCase() as any, type)}
+                                                onClick={() => useLayoutStore.getState().addSection(type.toLowerCase() as 'experience' | 'education' | 'projects' | 'skills' | 'languages' | 'custom', type)}
                                                 className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
                                             >
                                                 {type}
@@ -323,6 +355,7 @@ export const SidePanel = () => {
                         </div>
                     </div>
                 );
+            }
             case 'templates':
                 return (
                     <div className="grid grid-cols-2 gap-4">
@@ -387,7 +420,7 @@ export const SidePanel = () => {
                         )}
                     </div>
                 );
-            case 'history':
+            case 'history': {
                 const history = useLayoutStore.getState().past;
                 const restoreVersion = useLayoutStore.getState().restoreVersion;
                 return (
@@ -421,6 +454,7 @@ export const SidePanel = () => {
                         </div>
                     </div>
                 );
+            }
             case 'projects':
                 return (
                     <div className="flex flex-col gap-4">
@@ -467,12 +501,106 @@ export const SidePanel = () => {
                         )}
                     </div>
                 );
-            default:
                 return (
                     <div className="p-4 text-center text-gray-500">
                         <p>No content for {activeTab} yet.</p>
                     </div>
                 );
+            case 'elements': {
+                const addElement = useStore.getState().addElement;
+                return (
+                    <div className="flex flex-col gap-6">
+                        {/* Text Section */}
+                        <div>
+                            <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Text</h3>
+                            <div className="flex flex-col gap-2">
+                                <button
+                                    onClick={() => addElement({
+                                        id: crypto.randomUUID(),
+                                        type: 'text',
+                                        content: 'Add a heading',
+                                        x: 50, y: 50,
+                                        width: 300, height: 40,
+                                        fontSize: 28, fontWeight: 'bold', fill: '#000000',
+                                        rotation: 0, opacity: 1,
+                                        pageIndex: 0
+                                    })}
+                                    className="p-3 bg-gray-800 hover:bg-gray-700 rounded text-left text-xl font-bold border border-gray-700 hover:border-blue-500 transition-all"
+                                >
+                                    Add a heading
+                                </button>
+                                <button
+                                    onClick={() => addElement({
+                                        id: crypto.randomUUID(),
+                                        type: 'text',
+                                        content: 'Add a subheading',
+                                        x: 50, y: 100,
+                                        width: 300, height: 30,
+                                        fontSize: 18, fontWeight: 'normal', fill: '#333333',
+                                        rotation: 0, opacity: 1,
+                                        pageIndex: 0
+                                    })}
+                                    className="p-3 bg-gray-800 hover:bg-gray-700 rounded text-left text-lg font-medium border border-gray-700 hover:border-blue-500 transition-all"
+                                >
+                                    Add a subheading
+                                </button>
+                                <button
+                                    onClick={() => addElement({
+                                        id: crypto.randomUUID(),
+                                        type: 'text',
+                                        content: 'Add a little bit of body text',
+                                        x: 50, y: 140,
+                                        width: 300, height: 24,
+                                        fontSize: 12, fontWeight: 'normal', fill: '#666666',
+                                        rotation: 0, opacity: 1,
+                                        pageIndex: 0
+                                    })}
+                                    className="p-3 bg-gray-800 hover:bg-gray-700 rounded text-left text-xs border border-gray-700 hover:border-blue-500 transition-all"
+                                >
+                                    Add a little bit of body text
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Shapes Section */}
+                        <div>
+                            <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Shapes</h3>
+                            <div className="grid grid-cols-3 gap-3">
+                                <button
+                                    onClick={() => addElement({
+                                        id: crypto.randomUUID(),
+                                        type: 'shape',
+                                        content: 'rectangle',
+                                        x: 50, y: 50,
+                                        width: 100, height: 100,
+                                        fill: '#9ca3af',
+                                        rotation: 0, opacity: 1,
+                                        pageIndex: 0
+                                    })}
+                                    className="aspect-square bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 hover:border-blue-500 transition-all flex items-center justify-center p-4"
+                                >
+                                    <div className="w-full h-full bg-gray-400"></div>
+                                </button>
+                                <button
+                                    onClick={() => addElement({
+                                        id: crypto.randomUUID(),
+                                        type: 'shape',
+                                        content: 'circle',
+                                        x: 50, y: 50,
+                                        width: 100, height: 100,
+                                        fill: '#9ca3af',
+                                        rotation: 0, opacity: 1,
+                                        pageIndex: 0
+                                    })}
+                                    className="aspect-square bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 hover:border-blue-500 transition-all flex items-center justify-center p-4"
+                                >
+                                    <div className="w-full h-full rounded-full bg-gray-400"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
         }
     };
 

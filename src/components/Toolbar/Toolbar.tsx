@@ -3,7 +3,7 @@ import { Bold, Italic, AlignLeft, AlignCenter, AlignRight, Type, Copy, Trash2, A
 import clsx from 'clsx';
 
 export const Toolbar = () => {
-    const { elements, selectedIds, updateElements, removeElements, duplicate, bringForward, sendBackward, group, ungroup } = useStore();
+    const { elements, selectedIds, updateElements, removeElements, duplicate, bringForward, sendBackward } = useStore();
 
     // Get all selected elements
     const selectedElements = elements.filter(el => selectedIds.has(el.id));
@@ -24,7 +24,7 @@ export const Toolbar = () => {
     const first = selectedElements[0];
 
     // Helper to update all
-    const handleUpdate = (updates: any) => {
+    const handleUpdate = (updates: Partial<typeof first>) => {
         const ids = Array.from(selectedIds);
         updateElements(ids, updates);
     };
@@ -354,7 +354,7 @@ export const Toolbar = () => {
                                             {['solid', 'dashed', 'dotted'].map((s) => (
                                                 <button
                                                     key={s}
-                                                    onClick={() => handleUpdate({ borderStyle: s as any, borderWidth: first.borderWidth || 2 })}
+                                                    onClick={() => handleUpdate({ borderStyle: s as 'solid' | 'dashed' | 'dotted', borderWidth: first.borderWidth || 2 })}
                                                     className={clsx(
                                                         "flex-1 py-1.5 text-xs font-medium rounded capitalize",
                                                         first.borderStyle === s ? "bg-white shadow text-blue-600" : "text-gray-600 hover:bg-gray-200"

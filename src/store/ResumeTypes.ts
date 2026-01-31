@@ -36,7 +36,7 @@ export type SectionType =
 export interface SectionItem {
     id: string;
     isVisible: boolean;
-    data: Record<string, any>; // Flexible data for content (e.g. role, company)
+    data: Record<string, unknown>; // Flexible data for content (e.g. role, company)
 }
 
 export interface SectionData {

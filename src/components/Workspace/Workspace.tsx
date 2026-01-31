@@ -5,6 +5,7 @@ import { ZoomControls } from '../Canvas/ZoomControls';
 import { useStore } from '../../store/useStore';
 import { Grid, HelpCircle, Maximize } from 'lucide-react';
 import { useLayoutStore } from '../../store/useLayoutStore';
+import type { CanvasElement } from '../../store/useStore';
 
 export const Workspace = () => {
     const { zoom, setZoom, tool } = useStore();
@@ -141,7 +142,7 @@ export const Workspace = () => {
                     rotation: 0,
                     opacity: 1,
                     fill: '#00c4cc'
-                } as any);
+                } as CanvasElement);
             } else if (!isInput && (e.key === 'c' || e.key === 'C')) {
                 e.preventDefault();
                 useStore.getState().addElement({
@@ -156,7 +157,7 @@ export const Workspace = () => {
                     rotation: 0,
                     opacity: 1,
                     fill: '#00c4cc'
-                } as any);
+                } as CanvasElement);
             } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 const { selectedIds, elements } = useStore.getState();
                 if (selectedIds.size > 0) {

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLayoutStore } from '../../store/useLayoutStore';
+import { FreeFormLayer } from '../Canvas/FreeFormLayer';
 
 const A4_WIDTH_PX = 794; // A4 @ 96 DPI
 const A4_HEIGHT_PX = 1123;
@@ -33,6 +34,9 @@ export const Page = ({ children, pageIndex, totalPages }: { children: ReactNode,
             <div className="absolute bottom-2 right-4 text-[10px] text-gray-400 pointer-events-none font-medium">
                 Page {pageIndex + 1} of {totalPages}
             </div>
+
+            {/* Hybrid Canvas Layer */}
+            <FreeFormLayer pageIndex={pageIndex} />
         </div>
     );
 };

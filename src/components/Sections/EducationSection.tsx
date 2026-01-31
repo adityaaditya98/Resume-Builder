@@ -76,8 +76,9 @@ export const EducationSection = ({ section }: { section: SectionData }) => {
                                     suppressContentEditableWarning
                                     onBlur={(e) => updateSectionData(section.id, item.id, { degree: e.currentTarget.innerText })}
                                     className="font-bold text-gray-800 text-xs outline-none"
+                                    style={{ fontFamily: headingFontFamily }}
                                 >
-                                    {item.data.degree}
+                                    {item.data.degree as string}
                                 </h4>
                                 <span className="text-xs text-gray-400">@</span>
                                 <div
@@ -86,10 +87,10 @@ export const EducationSection = ({ section }: { section: SectionData }) => {
                                     onBlur={(e) => updateSectionData(section.id, item.id, { school: e.currentTarget.innerText })}
                                     className="text-xs text-gray-700 font-medium outline-none"
                                 >
-                                    {item.data.school}
+                                    {item.data.school as string}
                                 </div>
                                 <span className="flex-1 text-right text-[10px] text-gray-500 font-medium whitespace-nowrap">
-                                    {item.data.year}
+                                    {item.data.year as string}
                                 </span>
                             </div>
                         ) : (
@@ -100,8 +101,9 @@ export const EducationSection = ({ section }: { section: SectionData }) => {
                                         suppressContentEditableWarning
                                         onBlur={(e) => updateSectionData(section.id, item.id, { degree: e.currentTarget.innerText })}
                                         className={`font-bold text-gray-800 ${section.variant === 'modern' ? 'text-sm' : 'text-sm'} outline-none`}
+                                        style={{ fontFamily: headingFontFamily }}
                                     >
-                                        {item.data.degree}
+                                        {item.data.degree as string}
                                     </h4>
                                     <div
                                         contentEditable
@@ -109,7 +111,7 @@ export const EducationSection = ({ section }: { section: SectionData }) => {
                                         onBlur={(e) => updateSectionData(section.id, item.id, { school: e.currentTarget.innerText })}
                                         className="text-xs text-gray-600 font-medium outline-none"
                                     >
-                                        {item.data.school}
+                                        {item.data.school as string}
                                     </div>
                                 </div>
                                 <span
@@ -118,7 +120,7 @@ export const EducationSection = ({ section }: { section: SectionData }) => {
                                     onBlur={(e) => updateSectionData(section.id, item.id, { year: e.currentTarget.innerText })}
                                     className="text-xs text-gray-500 font-medium whitespace-nowrap outline-none"
                                 >
-                                    {item.data.year}
+                                    {item.data.year as string}
                                 </span>
                             </div>
                         )}

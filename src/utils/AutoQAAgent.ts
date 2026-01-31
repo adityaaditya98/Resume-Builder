@@ -167,4 +167,5 @@ export class AutoQAAgent {
 }
 
 // Expose on window for easy access
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).QA_Agent = new AutoQAAgent();

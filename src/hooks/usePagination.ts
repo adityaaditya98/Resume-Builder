@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import type { SectionData } from '../store/ResumeTypes';
 
 const A4_HEIGHT_PX = 1123; // A4 @ 96 DPI
 const PAGE_MARGIN_Y = 100; // Top + Bottom padding
@@ -7,7 +8,7 @@ const CONTENT_HEIGHT = A4_HEIGHT_PX - PAGE_MARGIN_Y;
 export const usePagination = (
     columns: string[][],
     heights: Record<string, number>,
-    sections: Record<string, any>
+    sections: Record<string, SectionData>
 ) => {
     return useMemo(() => {
         // We will return an array of pages.
@@ -21,7 +22,7 @@ export const usePagination = (
         const validColumns = (columns && columns.length > 0) ? columns : [[]]; // Default to 1 empty column
 
         // Initialize first page
-        let currentPageIndex = 0;
+        const currentPageIndex = 0;
         pages[currentPageIndex] = validColumns.map(() => []); // Create empty columns for page 0
 
         // Iterate through each column structure from the store

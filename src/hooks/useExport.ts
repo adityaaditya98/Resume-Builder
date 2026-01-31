@@ -7,12 +7,12 @@ export const useExport = () => {
     const [isExporting, setIsExporting] = useState(false);
     const { clearSelection } = useStore();
 
-    const _prepareCanvas = async () => {
+    const _prepareCanvas = useCallback(async () => {
         // Clear selection to remove blue outlines/resize handles
         clearSelection();
         // Wait for render cycle
         await new Promise(resolve => setTimeout(resolve, 100));
-    };
+    }, [clearSelection]);
 
     const exportToImage = useCallback(async (fileName: string = 'design', format: 'png' | 'jpeg' = 'png') => {
         const element = document.getElementById('canvas-content');
@@ -39,7 +39,7 @@ export const useExport = () => {
         } finally {
             setIsExporting(false);
         }
-    }, [clearSelection]);
+    }, [_prepareCanvas]);
 
     const exportToPDF = useCallback(async (fileName: string = 'design') => {
         // Find all pages
@@ -87,7 +87,7 @@ export const useExport = () => {
         } finally {
             setIsExporting(false);
         }
-    }, [clearSelection]);
+    }, [_prepareCanvas]);
 
     return { exportToImage, exportToPDF, isExporting };
 };

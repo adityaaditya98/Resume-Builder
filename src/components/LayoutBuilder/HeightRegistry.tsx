@@ -25,6 +25,7 @@ export const HeightRegistryProvider = ({ children }: { children: ReactNode }) =>
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useHeightRegistry = () => {
     const context = useContext(HeightRegistryContext);
     if (!context) {

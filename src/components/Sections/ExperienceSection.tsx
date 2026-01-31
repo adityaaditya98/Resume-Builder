@@ -79,8 +79,9 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
                                     suppressContentEditableWarning
                                     onBlur={(e) => updateSectionData(section.id, item.id, { role: e.currentTarget.innerText })}
                                     className="font-bold text-gray-800 text-xs outline-none"
+                                    style={{ fontFamily: headingFontFamily }}
                                 >
-                                    {item.data.role}
+                                    {item.data.role as string}
                                 </h4>
                                 <span className="text-xs text-gray-400">|</span>
                                 <span
@@ -89,10 +90,10 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
                                     onBlur={(e) => updateSectionData(section.id, item.id, { company: e.currentTarget.innerText })}
                                     className="text-xs text-gray-700 font-medium outline-none"
                                 >
-                                    {item.data.company}
+                                    {item.data.company as string}
                                 </span>
                                 <span className="flex-1 text-right text-[10px] text-gray-500 font-medium whitespace-nowrap">
-                                    {item.data.date}
+                                    {item.data.date as string}
                                 </span>
                             </div>
                         ) : (
@@ -104,8 +105,9 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
                                         suppressContentEditableWarning
                                         onBlur={(e) => updateSectionData(section.id, item.id, { role: e.currentTarget.innerText })}
                                         className={`font-bold text-gray-800 ${section.variant === 'modern' ? 'text-base' : 'text-sm'} outline-none`}
+                                        style={{ fontFamily: headingFontFamily }}
                                     >
-                                        {item.data.role}
+                                        {item.data.role as string}
                                     </h4>
                                     <span
                                         contentEditable
@@ -113,7 +115,7 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
                                         onBlur={(e) => updateSectionData(section.id, item.id, { date: e.currentTarget.innerText })}
                                         className="text-xs text-gray-500 font-medium whitespace-nowrap outline-none"
                                     >
-                                        {item.data.date}
+                                        {item.data.date as string}
                                     </span>
                                 </div>
                                 <div className="text-xs text-gray-600 font-medium mb-1">
@@ -124,7 +126,7 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
                                         className="outline-none"
                                         style={{ color: section.variant === 'modern' ? accentColor : 'inherit' }}
                                     >
-                                        {item.data.company}
+                                        {item.data.company as string}
                                     </span>
                                 </div>
                             </>
@@ -136,7 +138,7 @@ export const ExperienceSection = ({ section }: { section: SectionData }) => {
                             onBlur={(e) => updateSectionData(section.id, item.id, { description: e.currentTarget.innerText })}
                             className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap outline-none"
                         >
-                            {item.data.description}
+                            {item.data.description as string}
                         </div>
 
                         <button

@@ -89,7 +89,7 @@ export const SkillsSection = ({ section }: { section: SectionData }) => {
                             onBlur={(e) => handleUpdate(item.id, e.currentTarget.innerText)}
                             className={`text-sm text-gray-700 outline-none w-full`}
                         >
-                            {item.data.name}
+                            {item.data.name as string}
                         </span>
 
                         {/* Delete Button (visible on hover) */}

@@ -1,15 +1,12 @@
-import { Download, File, Play, Undo, Redo, Save, Upload, RotateCcw } from 'lucide-react';
-// import { useStore } from '../../store/useStore';
+import { Download, File, Undo, Redo, Save, Upload, RotateCcw } from 'lucide-react';
 import { useLayoutStore } from '../../store/useLayoutStore';
 import { useExport } from '../../hooks/useExport';
 import { useRef } from 'react';
 
 export const TopBar = () => {
-    // const { undo, redo, past, future } = useStore(); // Switch to Layout Store for Resume
     const { undo, redo, past, future } = useLayoutStore();
     const resume = useLayoutStore(state => state.resume);
     const setResume = useLayoutStore(state => state.setResume);
-    // const isExporting = useLayoutStore(state => state.isExporting); // Removed: Not in store
     const { exportToPDF, isExporting } = useExport(); // Added: Get from hook
     const fileInputRef = useRef<HTMLInputElement>(null);
 

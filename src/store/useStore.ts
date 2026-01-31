@@ -34,6 +34,7 @@ export interface CanvasElement {
     borderWidth?: number;
     borderColor?: string;
     borderStyle?: 'solid' | 'dashed' | 'dotted';
+    pageIndex?: number; // Hybrid Canvas: which page this element belongs to
 }
 
 interface EditorState {

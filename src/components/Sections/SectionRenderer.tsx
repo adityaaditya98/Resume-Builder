@@ -23,21 +23,16 @@ export const SectionRenderer = memo(({ sectionId, data }: { sectionId: string, d
 
     if (!data.isVisible) return null;
 
-    try {
-        switch (data.type) {
-            case 'header': return <HeaderSection section={data} />;
-            case 'experience': return <ExperienceSection section={data} />;
-            case 'education': return <EducationSection section={data} />;
-            case 'projects': return <ExperienceSection section={data} />;  // Re-use Experience for now
-            case 'skills': return <SkillsSection section={data} />;
-            case 'languages': return <SkillsSection section={data} />;     // Re-use Skills for now
-            case 'custom': return <SkillsSection section={data} />;        // Re-use Skills (List) for now
-            case 'summary': return <SummarySection section={data} />;
-            default: return <SectionPlaceholder section={data} />;
-        }
-    } catch (error) {
-        console.error(`Error rendering section ${data.id}:`, error);
-        return <div className="p-4 text-red-500 text-xs">Error loading section</div>;
+    switch (data.type) {
+        case 'header': return <HeaderSection section={data} />;
+        case 'experience': return <ExperienceSection section={data} />;
+        case 'education': return <EducationSection section={data} />;
+        case 'projects': return <ExperienceSection section={data} />;  // Re-use Experience for now
+        case 'skills': return <SkillsSection section={data} />;
+        case 'languages': return <SkillsSection section={data} />;     // Re-use Skills for now
+        case 'custom': return <SkillsSection section={data} />;        // Re-use Skills (List) for now
+        case 'summary': return <SummarySection section={data} />;
+        default: return <SectionPlaceholder section={data} />;
     }
 }, (prev, next) => {
     // Custom comparison to avoid deep check if reference is same
